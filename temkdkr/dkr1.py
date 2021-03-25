@@ -258,5 +258,7 @@ def main():
 
     plt.show()
 
+    # fig_page1.savefig("./input_files/Dkr1_img_png")
+
 
 main()
