@@ -3,14 +3,17 @@ Prog:   dkr1.py
 Auth:   Oleksii Krutko, IO-z91
 Desc:   TEMK-2. dkr 1. Var 10. 2021
 """
+import cmath
 import math
 
 from scipy.integrate import quad
 import matplotlib.pyplot as plt
 import numpy as np
 
+from multiplier_formater import multiple_formatter
 
-def create_axs():
+
+def create_axs(n_harmonics):
     # A4 page
     fig_width_cm = 21
     fig_height_cm = 29.7
@@ -40,22 +43,26 @@ def create_axs():
     plt.rc('figure', figsize=fig_size)
 
     fig_page1, axs_page1 = plt.subplots(2, 1)
-    fig_page1.suptitle("test",
+    fig_page1.suptitle("Periodical non-sine currents in linear electrics circuits.",
                        fontsize=16, style='normal')
     fig_page1.subplots_adjust(left=left_margin, right=right_margin, top=top_margin, bottom=bottom_margin,
                               wspace=0.3, hspace=0.2)
     fig_page1.canvas.set_window_title('Lab 3. Polynomial interpolation. Var. 10')
-    axs_page1[0].set_title("Test", fontsize=12, color='gray')
-    axs_page1[0].set_ylabel(r'$f(x)$', rotation=0, loc='top', fontsize=10, color='gray')
-    axs_page1[0].set_xlabel(r'$x$', fontsize=10, loc='right', color='gray')
+    axs_page1[0].set_title("Number of harmonics: {}".format(n_harmonics), fontsize=12, color='gray')
+    axs_page1[0].set_ylabel(r'$E(\omega t)$', rotation=0, loc='top', fontsize=10, color='gray')
+    axs_page1[0].set_xlabel(r'$\omega t$', fontsize=10, loc='right', color='gray')
+    axs_page1[0].xaxis.set_major_locator(plt.MultipleLocator(np.pi / 2))
+    axs_page1[0].xaxis.set_minor_locator(plt.MultipleLocator(np.pi / 12))
+    axs_page1[0].xaxis.set_major_formatter(plt.FuncFormatter(multiple_formatter()))
     axs_page1[0].grid()
 
     axs_page1[1].set_title('Nodes, interpolated', fontsize=12, color='gray')
-    axs_page1[1].set_ylabel("f(x)", rotation=0, loc='top', fontsize=10, color='gray')
-    axs_page1[1].set_xlabel(r'$x$', fontsize=10, style='italic', loc='right', color='gray')
+    axs_page1[1].set_ylabel(r'$E(\omega t)$', rotation=0, loc='top', fontsize=10, color='gray')
+    axs_page1[1].set_xlabel(r'$\omega t$', fontsize=10, style='italic', loc='right', color='gray')
     axs_page1[1].grid()
 
     return axs_page1, fig_page1
+
 
 def e(wt, Um):
     if 0.0 <= wt < math.pi/2:
@@ -102,22 +109,18 @@ def main():
     C = 14e-6
     w = 1000.0
 
-    # a = 0.0
-    #
-    # b = math.pi/2
-    #
-    # I = quad(integrand, a, b, args=Um)[0]*2/math.pi
+    n = 7
 
     # draw original func
     x_range = generate_x_range(0.0, 2*math.pi, 1000)
     y_range = generate_y_range(x_range, lambda wt: e(wt, Um))
 
-    axs_page1, fig_page1 = create_axs()
+    axs_page1, fig_page1 = create_axs(n)
 
     axs_page1[0].plot(x_range, y_range, color='blue')
 
 
-    n = 3
+
 
     B = []
     C = []
@@ -137,11 +140,37 @@ def main():
     for i in range(n):
         U.append(complex(B[i]/math.sqrt(2), C[i]/math.sqrt(2)))
 
-    Um = [math.sqrt(2)*abs(u) for u in U]
+    U_m = [math.sqrt(2)*abs(u) for u in U]
+
+    Psi = [cmath.phase(u) for u in U]
+
+    ei_ranges = []
+
+    for i in range(n):
+        def ei(wt):
+            return U_m[i] * math.sin((2*i + 1) * wt + Psi[i])
+
+        ei_ranges.append(generate_y_range(x_range, lambda wt: ei(wt)))
+
+        axs_page1[0].plot(x_range, ei_ranges[i], alpha=0.3, linestyle='--', color='red')
+
+    e_sum_range = []
+
+    for i in range(len(x_range)):
+        y_sum = 0.0
+        for j in range(n):
+            y_sum = y_sum + ei_ranges[j][i]
+
+        e_sum_range.append(y_sum)
+
+    axs_page1[0].plot(x_range, e_sum_range, color='green')
 
 
-    print(U)
-    # plt.show()
+    # 3.
+
+    Z_eqv = complex(-Xc) / complex()
+
+    plt.show()
 
 
 main()
