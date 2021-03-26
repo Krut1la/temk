@@ -113,7 +113,7 @@ def main():
     # C = 14e-6
     # w = 1000.0
 
-    n = 3
+    n = 30
 
     # 1-2
     x_range = generate_x_range(0.0, 2 * math.pi, 1000)
@@ -240,6 +240,7 @@ def main():
     beta = gamma.imag
     Zc1 = cmath.sqrt(A12 / A21)
 
+    print("Gamma = {}".format(gamma))
     print("Alpha = {}".format(alpha))
     print("Beta = {}".format(beta))
     print("Zc1 = {}".format(Zc1))
@@ -258,7 +259,7 @@ def main():
 
     plt.show()
 
-    # fig_page1.savefig("./input_files/Dkr1_img_png")
+    fig_page1.savefig("./input_files/Dkr1_img_png")
 
 
 main()
