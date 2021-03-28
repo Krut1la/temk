@@ -3,14 +3,10 @@ Prog:   dkr2.py
 Auth:   Oleksii Krutko, IO-z91
 Desc:   TEMK-2. dkr 2. Var 10. 2021
 """
-import cmath
 import math
 
 from scipy.integrate import quad
 import matplotlib.pyplot as plt
-import numpy as np
-
-from multiplier_formater import multiple_formatter
 
 
 def create_axs():
@@ -94,61 +90,56 @@ def main():
     R2 = 100
     R3 = 100
     L = 0.19
-    C = 50e-6
     T_r = 1.5
-
-    # test
-    # U = 20
-    # R1 = 40
-    # R2 = 20
-    # R3 = 40
-    # L = 1e-2
-    # # C = 50e-6
-    # T_r = 4e-3
 
     axs_page1, fig_page1 = create_axs()
 
     p = -(R2*R3 + R1*R2 + R1*R3)/(L*(R1 + R3))
 
+    tau = 1/math.fabs(p)
+
+    T = T_r * tau
+
     A = 1/(R1 + R3)
 
+    print("T = {:.04}".format(T))
     print("p = {:.04}".format(p))
     print("A = {:.04}".format(A))
 
     def u_t(t):
-        if 0 <= t <= T_r:
-            return t*U/T_r
-        if T_r <= t <= 1000000.0:
+        if 0 <= t <= T:
+            return U - 2 * U * t / T
+        if T <= t <= 1000000.0:
             return 0.0
 
     def gL_t_x(t):
-        return A*(1 - math.exp(p*(t)))
+        return A*(1 - math.exp(p * t))
 
     def integrand_1(x, t):
-        return (U/T_r)*gL_t_x(t - x)
+        return (-2*U/T)*gL_t_x(t - x)
 
     def integrand_2(x, t):
-        return (U/T_r)*gL_t_x(t - x)
+        return (-2*U/T)*gL_t_x(t - x)
 
     def iL_t_1(t):
         return u_t(0.0)*gL_t_x(t) + quad(integrand_1, 0.0, t, args=t)[0]
 
     def iL_t_2(t):
-        return u_t(0.0)*gL_t_x(t) + quad(integrand_2, 0.0, T_r, args=t)[0] - u_t(T_r)*gL_t_x(t - T_r)
+        return u_t(0.0)*gL_t_x(t) + quad(integrand_2, 0.0, T, args=t)[0] - u_t(T)*gL_t_x(t - T)
 
-    x_range = generate_x_range(0.0, T_r, 1000)
+    x_range = generate_x_range(0.0, T, 1000)
     y_range = generate_y_range(x_range, lambda t: iL_t_1(t))
 
     axs_page1.plot(x_range, y_range, color='green')
 
-    x_range = generate_x_range(T_r, 6e-3, 1000)
+    x_range = generate_x_range(T, 6e-3, 1000)
     y_range = generate_y_range(x_range, lambda t: iL_t_2(t))
 
     axs_page1.plot(x_range, y_range, color='green')
 
     plt.show()
 
-    # fig_page1.savefig("./input_files/Dkr1_img_png")
+    fig_page1.savefig("./input_files/Dkr2_img_png")
 
 
 main()
